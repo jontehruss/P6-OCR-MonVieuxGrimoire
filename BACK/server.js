@@ -16,7 +16,7 @@ const normamlizePort = val => {
 };
 
 // renvoie un port valide, qu'il soit fourni sous la forme d'un numéro ou d'une chaîne
-const port = normamlizePort(process.env.PORT || 3001);
+const port = normamlizePort(process.env.PORT || 4000);
 
 app.set('port', port);
 
