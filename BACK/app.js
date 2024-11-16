@@ -3,17 +3,18 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 
+require('dotenv').config();
 
-//  importer les modèles de données
+
+//  importer les modèles de données 
 const User = require('./models/User');
 const Book = require('./models/Book');
 
 const app = express();
 
 // connexion à la base de données 
-// mongodb://<username>:<password>@localhost:27017/<database>
-// russeaujohann 36H1Bi2w6exAl5Zg
-mongoose.connect( process.env.CONNECTIONSTRING ,
+
+mongoose.connect( process.env.MONGODB_URI ,
     {
         useNewUrlParser: true,
         useUnifiedTopology: true,
