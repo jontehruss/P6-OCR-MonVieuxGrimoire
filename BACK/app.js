@@ -2,8 +2,8 @@ const express = require('express');
 const app = express();
 
 // importer les routes
-const bookRoutes = require('./routes/books');
-const userRoutes = require('./routes/user');
+const bookRoutes = require('./routes/books.routes');
+const userRoutes = require('./routes/user.routes');
 
 // package pour interragir avec mongo
 const mongoose = require('mongoose');
@@ -30,9 +30,9 @@ mongoose.connect(process.env.MONGODB_URI,
 
 
 // app.use() permet d'attribuer un middleware à une route spécifique (ou toutes si non précisé en argument)
-
-// intercepter tous les content type json -> permet d'accéder au body des requêtes 
+// intercepter tous les content type json -> permet d'accéder au body des requêtes 'req.body...'
 app.use(express.json());
+
 
 // ajouter les Origin, Headers et Méthodes autorisées pour CORS
 // 1er middleware -> Appliqué sur toutes les routes
@@ -43,12 +43,9 @@ app.use((req, res, next) => {
     next();
 });
 
-// rendre exploitable les datas en json
-app.use(bodyParser.json());
 
 // Utiliser le router bookRoutes pour toutes les routes /api/books
 app.use('/api/books', bookRoutes);
-
 app.use('/api/auth', userRoutes);
 
 
