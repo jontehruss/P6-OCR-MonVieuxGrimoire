@@ -1,38 +1,16 @@
 const express = require('express');
-const app = express();
+
+// package pour interragir avec mongo
+const mongoose = require('mongoose');
+
+//  Variables d'environnement
+require('dotenv').config();
 
 // importer les routes
 const bookRoutes = require('./routes/books.routes');
 const userRoutes = require('./routes/user.routes');
 
-// package pour interragir avec mongo
-const mongoose = require('mongoose');
-
-// body parser pour exploiter les données transmises en json
-const bodyParser = require('body-parser');
-
-//  importer les modèles de données 
-const User = require('./models/User');
-
-//  Variables d'environnement
-require('dotenv').config();
-
-
-// connexion à la base de données 
-mongoose.connect(process.env.MONGODB_URI,
-    {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-        dbName: process.env.DB_NAME,
-    })
-    .then(() => console.log('connexion DB ok!'))
-    .catch(err => console.log('connexion failed ! ', err));
-
-
-// app.use() permet d'attribuer un middleware à une route spécifique (ou toutes si non précisé en argument)
-// intercepter tous les content type json -> permet d'accéder au body des requêtes 'req.body...'
-app.use(express.json());
-
+const app = express();
 
 // ajouter les Origin, Headers et Méthodes autorisées pour CORS
 // 1er middleware -> Appliqué sur toutes les routes
@@ -43,10 +21,21 @@ app.use((req, res, next) => {
     next();
 });
 
+// app.use() permet d'attribuer un middleware à une route spécifique (ou toutes si non précisé en argument)
+// intercepter tous les content type json -> permet d'accéder au body des requêtes 'req.body...'
+app.use(express.json());
+
+// connexion à la base de données 
+mongoose.connect(process.env.MONGODB_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        dbName: process.env.DB_NAME,
+    })
+    .then(() => console.log('connexion DB ok!'))
+    .catch(err => console.log('connexion failed ! ', err));
 
 // Utiliser le router bookRoutes pour toutes les routes /api/books
 app.use('/api/books', bookRoutes);
 app.use('/api/auth', userRoutes);
-
 
 module.exports = app;

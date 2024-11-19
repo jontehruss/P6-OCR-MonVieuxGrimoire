@@ -1,53 +1,70 @@
-const User = require ('../models/User');
+const User = require('../models/User');
 
-// ! variable temporaire pour simuler la connexion
-let data = {
-    token: 'azerty',
-    userId: '6738dbc4a16bfe0613a0392e'
-};
+const bcrypt = require('bcrypt');
+
+// // ! variable temporaire pour simuler la connexion
+// let data = {
+//     token: 'azerty',
+//     userId: '6738dbc4a16bfe0613a0392e'
+// };
 
 
 exports.signUp = (req, res, next) => {
-    // Créer un utilisateur
-    const user = new User({
-        email: req.body.email,
-        password: req.body.password
-    })
-    // méthode save() pour enregistrer en base de données
-    user.save()
-        .then((newUser) => {
-            res.status(201).json({ message: 'utilisateur  enregistré !' });
-            // Récupérer l'_id mongo de l'utilisateur
-            console.log(newUser._id);
+
+    // hasher le mot de passe en premier et en assynchrone car cela prends un certain temps
+    bcrypt.hash(req.body.password, 10)
+        .then(hash => {
+            // Créer un utilisateur et passer le résultat du hash en body
+            const user = new User({
+                email: req.body.email,
+                password: hash
+            });
+            // méthode save() pour enregistrer en base de données
+            user.save()
+                .then((newUser) => {
+                    res.status(201).json({ message: 'utilisateur  enregistré !' });
+                    // Récupérer l'_id mongo de l'utilisateur
+                    console.log(newUser._id);
+                })
+                .catch(error => res.status(400).json({
+                    error: error,
+                    message: 'utilisateur déjà existant'
+                }));
         })
-        .catch(error => res.status(400).json({ error }));
+        .catch(error => res.status(500).json({ error: error }));
 };
 
 
 exports.logIn = async (req, res) => {
-    try {
-        // récupérer l'email depuis le body
-        const { email } = req.body;
 
-        // vérifier que l'email est fourni
-        if (!email) {
-            return res.status(400).json({ error: "no email" });
-        };
-
-        // cherche user dans  la base 
-        const user = await User.findOne({ email });
-
-        if (user) {
-            // ! Si user existe
-            console.log('user is :', user);
-            return res.status(200).json(data);
-        } else {
-            // Si pas de user
-            console.log('no user in db');
-            return res.status(400).json({ error });
-        };
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error });
-    };
+    // cherche user dans  la base 
+    User.findOne({ email: req.body.email })
+        .then(user => {
+            // vérifier si l'utilisateur est dans la base de données
+            if (!user) {
+                res.status(401).json({ message: 'identifiant et ou password incorrect(s)' });
+                // si user est présent :
+            } else {
+                // utiliser la méthode compare de bcrypt pour vérifier le mot de passe -> comparaison de la req avec l'information en base 
+                bcrypt.compare(req.body.password, user.password)
+                    .then(valid => {
+                        if(!valid) {
+                            res.status(401).json({ message : 'identifiant et ou password incorrect(s)'})
+                        } else {
+                            res.status(200).json({
+                                userId: user._id,
+                                token: 'TokenEnDur'
+                            })
+                        }
+                    })
+                    .catch(error => {
+                        res.status(500)
+                            .json({ error: error })
+                    });
+            };
+        })
+        .catch(error => {
+            res.status(500)
+                .json({ error: error })
+        });
 };

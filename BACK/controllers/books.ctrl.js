@@ -18,7 +18,10 @@ exports.addBook = (req, res) => {
 exports.deleteBook = (req, res) => {
     //  Méthode deleteOne pour cibler le avec l'id
     Book.deleteOne({ _id: req.params.id })
-        .then(book => res.status(200).json({ message: 'livre supprimé !' }))
+        .then(book => res.status(200).json({
+            message: 'livre supprimé !',
+            livre: book
+        }))
         .catch(error => res.status(400).json({ error }))
 };
 
@@ -38,7 +41,7 @@ exports.getAllBooks = (req, res) => {
 };
 
 
-exports.getOneBook =  (req, res) => {
+exports.getOneBook = (req, res) => {
     // Méthode findOne sur la paramètre id de la request 
     Book.findOne({ _id: req.params.id })
         .then(book => res.status(200).json(book))
