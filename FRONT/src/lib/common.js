@@ -36,9 +36,13 @@ export async function getAuthenticatedUser() {
 
 export async function getBooks() {
   try {
+    console.log(localStorage.getItem('token'));
     const response = await axios({
       method: 'GET',
       url: `${API_ROUTES.BOOKS}`,
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`, //! ajout du token dans le header de la requête
+      },
     });
     // eslint-disable-next-line array-callback-return
     const books = formatBooks(response.data);

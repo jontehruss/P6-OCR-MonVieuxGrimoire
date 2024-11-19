@@ -1,12 +1,13 @@
 const User = require('../models/User');
 
+//  importer bcrypt
 const bcrypt = require('bcrypt');
 
-// // ! variable temporaire pour simuler la connexion
-// let data = {
-//     token: 'azerty',
-//     userId: '6738dbc4a16bfe0613a0392e'
-// };
+// importer jswonweb token
+const jwt = require('jsonwebtoken');
+
+//  Variables d'environnement
+require('dotenv').config();
 
 
 exports.signUp = (req, res, next) => {
@@ -36,7 +37,7 @@ exports.signUp = (req, res, next) => {
 
 
 exports.logIn = async (req, res) => {
-
+    console.log('clé token controlleur : ' + process.env.SECRET_KEY)
     // cherche user dans  la base 
     User.findOne({ email: req.body.email })
         .then(user => {
@@ -48,14 +49,20 @@ exports.logIn = async (req, res) => {
                 // utiliser la méthode compare de bcrypt pour vérifier le mot de passe -> comparaison de la req avec l'information en base 
                 bcrypt.compare(req.body.password, user.password)
                     .then(valid => {
-                        if(!valid) {
-                            res.status(401).json({ message : 'identifiant et ou password incorrect(s)'})
+                        if (!valid) {
+                            res.status(401).json({ message: 'identifiant et ou password incorrect(s)' })
                         } else {
+                            // envoyer le token encodé dans la réponse
                             res.status(200).json({
                                 userId: user._id,
-                                token: 'TokenEnDur'
+                                token: jwt.sign(
+                                    { userId: user._id },
+                                    process.env.SECRET_KEY,
+                                    { expiresIn: '1h' }
+                                )
+                                
                             })
-                        }
+                        };
                     })
                     .catch(error => {
                         res.status(500)

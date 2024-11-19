@@ -19,3 +19,10 @@ npm install brcypt
 
 # déporter les informations privées en variables d'environnement
 npm install dotenv
+
+# implémenter le token jwt
+npm iunstall --save jsonwebtoken
+
+
+# corrections dans FRONT\src\pages\Home\Home.jsx
+<!-- ajout header+jwt -->
