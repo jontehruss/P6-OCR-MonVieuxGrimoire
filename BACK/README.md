@@ -26,3 +26,6 @@ npm iunstall --save jsonwebtoken
 
 # corrections dans FRONT\src\pages\Home\Home.jsx
 <!-- ajout header+jwt -->
+
+# gérer les fichiers (upload/download)
+npm instal -- save multer

@@ -22,6 +22,7 @@ module.exports = (req, res, next) => {
         }
 
         // checker la conformité du token avec la clé secrète
+        // La méthode verify() du package jsonwebtoken permet de vérifier la validité d'un token
         const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
 
         // ajouter "userId" à req.auth pour autoriser uniquement l'utilisateur connecté à accéder/modifier les ressources
