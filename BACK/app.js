@@ -46,6 +46,6 @@ app.use('/api/auth', userRoutes);
 
 // ! route spécifique à la gestion des images
 // La route sert des fichiers statiques, contenus dans le dossier images
-app.use('images', express.static(path.join(__dirname, 'images')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 module.exports = app;

@@ -17,13 +17,16 @@ router.post('/', auth, multer, bookCtrl.addBook);
 // router.post('/', auth, bookCtrl.addBook);
 
 // modifier un livre
-router.put('/:id', auth, bookCtrl.editBook);
+router.put('/:id', auth, multer, bookCtrl.editBook);
 
 // lister tous les livre
 router.get('/', auth, bookCtrl.getAllBooks);
 
 // détails d'un livre
 router.get('/:id', auth, bookCtrl.getOneBook);
+
+// livres mieux notés
+router.get('/bestrating', auth, bookCtrl.getBestsBook);
 
 // supprimer un livre
 router.delete('/:id', auth, bookCtrl.deleteBook);
