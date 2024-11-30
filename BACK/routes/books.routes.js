@@ -4,12 +4,17 @@ const router = express.Router();
 //  importer middleware de vérification authentification
 const auth = require('../middleware/auth');
 
+// importer le middleware Multer pour la gestion des fichiers 
+const multer = require('../middleware/multer-config');
+
 //  importer le controlleur
 const bookCtrl = require('../controllers/books.ctrl');
 
 
 // ajouter un livre en bdd
-router.post('/', auth, bookCtrl.addBook);
+// l'utilisation de Multer modifie la requête, il faut donc modifie rle contrôlleur
+router.post('/', auth, multer, bookCtrl.addBook);
+// router.post('/', auth, bookCtrl.addBook);
 
 // modifier un livre
 router.put('/:id', auth, bookCtrl.editBook);

@@ -3,14 +3,20 @@ const express = require('express');
 // package pour interragir avec mongo
 const mongoose = require('mongoose');
 
+const path = require('path');
+
 //  Variables d'environnement
 require('dotenv').config();
+
+const app = express();
+
 
 // importer les routes
 const bookRoutes = require('./routes/books.routes');
 const userRoutes = require('./routes/user.routes');
 
-const app = express();
+
+
 
 // ajouter les Origin, Headers et Méthodes autorisées pour CORS
 // 1er middleware -> Appliqué sur toutes les routes
@@ -37,5 +43,9 @@ mongoose.connect(process.env.MONGODB_URI, {
 // Utiliser le router bookRoutes pour toutes les routes /api/books
 app.use('/api/books', bookRoutes);
 app.use('/api/auth', userRoutes);
+
+// ! route spécifique à la gestion des images
+// La route sert des fichiers statiques, contenus dans le dossier images
+app.use('images', express.static(path.join(__dirname, 'images')));
 
 module.exports = app;

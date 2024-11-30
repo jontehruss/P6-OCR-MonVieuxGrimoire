@@ -14,10 +14,16 @@ const storage = multer.diskStorage({
         callback(null, 'images')
     },
     filename: (req, file, callback) => {
+        // propriété orignal name de file pour récupérer le nom du fichier.
+        // méthodes split et join pour retirer les espaces 
         const name = file.originalname.split(' ').join('_');
-        const extension = MIME_TYPES(file.mimetype);
+
+        // avec le mime/type -> création de l'extension
+        const extension = MIME_TYPES[file.mimetype];
         callback(null, name + Date.now() + '.' + extension);
     }
 });
 
+// export de la conf avec la méthode multer en passant le paramètre storage qui contient la config
+// la méthode single pour indiquer qu'on ne traite qu'un seul fichier (pas un groupe) et qu'il s'agit d'images
 module.exports = multer({ storage }).single('image');
