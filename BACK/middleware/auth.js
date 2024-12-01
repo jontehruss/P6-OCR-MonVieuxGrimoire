@@ -27,7 +27,7 @@ module.exports = (req, res, next) => {
 
         // ajouter "userId" à req.auth pour autoriser uniquement l'utilisateur connecté à accéder/modifier les ressources
         req.auth = { userId: decodedToken.userId }; 
-        console.log('Utilisateur authentifié :', req.auth);
+        // console.log('Utilisateur authentifié :', req.auth);
 
         // passer au middleware suivant
         next();

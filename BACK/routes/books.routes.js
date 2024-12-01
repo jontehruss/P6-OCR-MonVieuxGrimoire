@@ -25,6 +25,9 @@ router.get('/', auth, bookCtrl.getAllBooks);
 // détails d'un livre
 router.get('/:id', auth, bookCtrl.getOneBook);
 
+// Noter un livre
+router.post('/:id/rating', auth, bookCtrl.noteBook);
+
 // livres mieux notés
 router.get('/bestrating', auth, bookCtrl.getBestsBook);
 
