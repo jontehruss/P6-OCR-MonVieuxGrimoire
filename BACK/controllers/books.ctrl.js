@@ -2,6 +2,10 @@ const { error } = require('console');
 const Book = require('../models/Book');
 const fs = require('fs');
 
+const mongoose = require('mongoose')
+
+
+
 
 exports.addBook = (req, res) => {
     // parser l'objet du body request Book
@@ -86,7 +90,6 @@ exports.noteBook = (req, res) => {
         userId: userId,
         grade: grade,
     };
-    console.log(userRating);
 
     // trouver le livre par son ID
     Book.findById(bookId)
@@ -97,16 +100,37 @@ exports.noteBook = (req, res) => {
 
             // ajouter la nouvelle note au tableau ratings
             book.ratings.push(userRating);
-            console.log(book);
 
-            // ! enregistrer les modifications
+            // calculer le total des notes du livre
+            const totalGrade = book.ratings.reduce((sum, rating) => {
+                return sum + rating.grade;
+            }, 0);
+
+            // calculer le nombre de grades
+            const numberOfGrades = book.ratings.length;
+
+            // calculer la moyenne du livre
+            const averageGrade = numberOfGrades > 0 ? Math.round(totalGrade / numberOfGrades) : 0;
+
+            // mettre à jour la note moyenne du livre
+            book.averageRating = averageGrade;
+
             return book.save();
         })
         .then((updatedBook) => {
-            res.status(201).json({
+            // Convertir l'objet en JSON ordinaire
+            const bookData = updatedBook.toObject();
+
+            // Inclure `id` au niveau racine ET dans l'objet book
+            const response = {
                 message: "Note enregistrée avec succès",
-                book: updatedBook, // vérifier le livre mis à jour
-            });
+                book: { ...bookData, id: bookData._id.toString() },
+                _id: bookData._id.toString(), // Ajout au niveau racine
+                id: bookData._id.toString(),
+            };
+            console.log(response)
+
+            res.status(201).json(response);
         })
         .catch((error) =>
             res.status(400).json({
@@ -141,10 +165,25 @@ exports.getOneBook = (req, res) => {
 };
 
 exports.getBestsBook = (req, res) => {
-    Book.findOne({ _id: req.params.id })
-        .then(book => res.status(200).json(book))
+
+
+    console.log("Requête reçue !");
+
+    // récupérer tous les livre  
+    // Méthode find pour récupérer les livres
+    Book.find()
+        // renvoyer que 3 éléments
+        .limit(3)
+        // trier de manière ascendente
+        .sort({ title: 1 })
+        .then((books) => {
+            res.status(200).json(books);
+        })
         .catch(error => res.status(400).json({ error }));
+
+
 };
+
 
 exports.deleteBook = (req, res) => {
     //  Méthode deleteOne pour cibler le avec l'id

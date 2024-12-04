@@ -4,7 +4,7 @@ require('dotenv').config();
 // ! middleware pour vérifier la présence et conformité du token dans le header des requêtes
 module.exports = (req, res, next) => {
     try {
-        console.log('Clé secrète dans le middleware :', process.env.SECRET_KEY);
+        // console.log('Clé secrète dans le middleware :', process.env.SECRET_KEY);
 
         const authHeader = req.headers.authorization;
 

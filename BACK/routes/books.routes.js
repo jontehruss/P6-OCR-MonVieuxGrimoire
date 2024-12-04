@@ -12,6 +12,10 @@ const bookCtrl = require('../controllers/books.ctrl');
 
 
 // ajouter un livre en bdd
+
+//! livres mieux notés
+router.get('/bestrating', auth, bookCtrl.getBestsBook);
+
 // l'utilisation de Multer modifie la requête, il faut donc modifie rle contrôlleur
 router.post('/', auth, multer, bookCtrl.addBook);
 // router.post('/', auth, bookCtrl.addBook);
@@ -27,9 +31,6 @@ router.get('/:id', auth, bookCtrl.getOneBook);
 
 // Noter un livre
 router.post('/:id/rating', auth, bookCtrl.noteBook);
-
-// livres mieux notés
-router.get('/bestrating', auth, bookCtrl.getBestsBook);
 
 // supprimer un livre
 router.delete('/:id', auth, bookCtrl.deleteBook);
