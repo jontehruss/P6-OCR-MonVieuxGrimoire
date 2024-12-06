@@ -18,8 +18,8 @@ exports.addBook = (req, res) => {
     delete bookObject.averageRating;
     console.log(bookObject)
 
+
     const book = new Book({
-        // ...req.body,
         // extraire l'user id du token avec le middleware auth
         userId: req.auth.userId,
         title: bookObject.title,
@@ -28,10 +28,12 @@ exports.addBook = (req, res) => {
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
         year: bookObject.year,
         genre: bookObject.genre,
+        // initialiser le averageRating à 0 et le tableau ratings vide        
         ratings: [{
             userId: req.auth.userId,
-            grade: bookObject.grade
+            grade: 0
         }],
+        averageRating: 0
     });
 
     console.log(book);
@@ -54,8 +56,6 @@ exports.editBook = (req, res, next) => {
         ...req.body
     };
 
-
-
     delete bookObject._userId;
     Book.findOne({ _id: req.params.id })
         .then((book) => {
@@ -72,14 +72,13 @@ exports.editBook = (req, res, next) => {
         })
         .catch((error) => res.status(400).json({ error }));
 
-
     Book.updateOne({ _id: req.params.id }, { ...req.body, _id: req.params.id })
         .then(() => res.status(200).json({ message: 'livre modifié' }))
         .catch(error => res.status(400).json({ error }));
 };
 
 // Fonction de notation d'un livre
-exports.noteBook = (req, res) => {
+exports.rateBook = (req, res) => {
     // récupérer les paramétres livre, user et note
     const userId = req.auth.userId; // ID de l'utilisateur authentifié
     const grade = req.body.rating; // note envoyée
@@ -97,6 +96,11 @@ exports.noteBook = (req, res) => {
             if (!book) {
                 return res.status(404).json({ message: "Livre non trouvé" });
             };
+
+            // Si le livre a déjà été noté par l'utilisateur
+            book.ratings.forEach((book, index) => {
+                console.log(`index : ${index}: ${book.userId}`)
+            });
 
             // ajouter la nouvelle note au tableau ratings
             book.ratings.push(userRating);
@@ -121,11 +125,11 @@ exports.noteBook = (req, res) => {
             // Convertir l'objet en JSON ordinaire
             const bookData = updatedBook.toObject();
 
-            // Inclure `id` au niveau racine ET dans l'objet book
+            // ! Voir si la réponse est ok ?
             const response = {
-                ...bookData, id: bookData._id.toString(),
+                ...bookData,
+                // * id: bookData._id.toString(),
             };
-            console.log(response)
 
             res.status(201).json(response);
         })

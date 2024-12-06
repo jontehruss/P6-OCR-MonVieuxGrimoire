@@ -30,7 +30,7 @@ router.get('/', auth, bookCtrl.getAllBooks);
 router.get('/:id', auth, bookCtrl.getOneBook);
 
 // Noter un livre
-router.post('/:id/rating', auth, bookCtrl.noteBook);
+router.post('/:id/rating', auth, bookCtrl.rateBook);
 
 // supprimer un livre
 router.delete('/:id', auth, bookCtrl.deleteBook);
