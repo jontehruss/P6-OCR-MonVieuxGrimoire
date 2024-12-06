@@ -123,10 +123,7 @@ exports.noteBook = (req, res) => {
 
             // Inclure `id` au niveau racine ET dans l'objet book
             const response = {
-                message: "Note enregistrée avec succès",
-                book: { ...bookData, id: bookData._id.toString() },
-                _id: bookData._id.toString(), // Ajout au niveau racine
-                id: bookData._id.toString(),
+                ...bookData, id: bookData._id.toString(),
             };
             console.log(response)
 
@@ -142,8 +139,6 @@ exports.noteBook = (req, res) => {
 
 
 exports.getAllBooks = (req, res) => {
-    // console.log('Utilisateur authentifié :', req.auth); // log pour vérifier l'utilisateur
-
     // Méthode find pour récupérer les livres
     Book.find()
         .then(books => {
@@ -151,8 +146,6 @@ exports.getAllBooks = (req, res) => {
         })
         .catch(error => res.status(400).json({ error }));
 };
-
-
 
 exports.getOneBook = (req, res) => {
     // Méthode findOne sur la paramètre id de la request 
@@ -166,21 +159,18 @@ exports.getOneBook = (req, res) => {
 
 exports.getBestsBook = (req, res) => {
 
-
-    console.log("Requête reçue !");
-
-    // récupérer tous les livre  
     // Méthode find pour récupérer les livres
     Book.find()
         // renvoyer que 3 éléments
         .limit(3)
+        // méthode slect pour projection des seuls champs voulus 
+        .select("title author averageRating imageUrl")
         // trier de manière ascendente
-        .sort({ title: 1 })
+        .sort({ averageRating: -1 })
         .then((books) => {
             res.status(200).json(books);
         })
         .catch(error => res.status(400).json({ error }));
-
 
 };
 
