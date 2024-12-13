@@ -1,4 +1,6 @@
 const { error } = require('console');
+const fs = require('fs-extra');
+// const fsXtra = require ('fs-extra');
 const Book = require('../models/Book');
 
 
@@ -36,45 +38,65 @@ exports.addBook = (req, res) => {
 };
 
 
-exports.editBook = (req, res, next) => {
+
+exports.editBook = async (req, res, next) => {
     // S'il y a un file dans le body, parser l'objet 
     const bookObject = req.file ? {
         ...JSON.parse(req.body.book),
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-
-        // sinon,         
     } : {
         ...req.body
     };
 
     delete bookObject._userId;
 
-    Book.findOne({ _id: req.params.id })
-        .then((book) => {
-            // Si l'id du token est différent de l'id en base de données, refus
-            if (book.userId != req.auth.userId) {
-                res.status(401).json({ message: 'non autorisé, userId mismatch' })
-                // sinon on traite pour mettre à jour l'enregistrement en base
-            } else {
+    try {
+        const book = await Book.findOne({ _id: req.params.id });
+        // vérifier la présence du livre
+        if (!book) {
+            return res.status(404).json({ message: 'Livre non enregistré' })
+        };
+        // Si l'iduser envoyé avec le token est différent de l'iduser en base de données, refus
+        if (book.userId != req.auth.userId) {
+            return res.status(401).json({ message: 'non autorisé, userId mismatch' })
+        };
 
+        // initialiser une variable pour récupérer la promesse renvoyée par Book.updateOne()
+        let updatePromise;
 
-                // vérifier qu'il y a une image dans la requête et dans le boody déjà existant
-                if (req.file && bookObject.body.imageUrl) {
-                    //! supprimer l'ancienne image ici
-                }
+        // Appel de la fonction updateOne() selon les 2 cas
+        if (!req.file) {
+            // Cas #1 mise à jour d'un champ (texte/nb sans image)
+            // console.log('Cas #1 mise à jour d’un champ (texte/nb sans image)');
+            updatePromise = Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id });
 
-                Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id })
-                    .then(() => res.status(201).json({ message: 'modification effectuée' }))
-                    .catch((error) => (res.status(400).json({ error })));
-            };
+        } else {
+            // Cas #2 mise à jour de l'image
+            const fileName = book.imageUrl.split('/').pop();
+            try {
+                // supprimer le fichier avec fs.unlink
+                await fs.unlink(`./images/${fileName}`);
+                // console.log('Fichier supprimé');
 
-        })
-        .catch((error) => res.status(400).json({ error }));
+            } catch (err) {
+                console.error('Erreur de suppression du fichier', err);
+                return res.status(500).json({ error: 'Erreur de suppression du fichier' });
+            }
 
-    Book.updateOne({ _id: req.params.id }, { ...req.body, _id: req.params.id })
-        .then(() => res.status(200).json({ message: 'livre modifié' }))
-        .catch(error => res.status(400).json({ error }));
+            // récupérer la promesse
+            updatePromise = Book.updateOne({ _id: req.params.id }, bookObject);
+        };
+
+        await updatePromise;
+        res.status(200).json({ message: 'livre modifié' });
+        // console.log('Livre mis à jour');
+
+    } catch (error) {
+        console.error('Erreur lors de la recherche du livre', error);
+        res.status(400).json({ error });
+    }
 };
+
 
 // Fonction de notation d'un livre
 exports.rateBook = (req, res) => {
@@ -172,7 +194,7 @@ exports.getBestsBook = (req, res) => {
         .catch(error => res.status(400).json({ error }));
 };
 
-// ! penser à supprimer l'image
+// ! penser à supprimer l'image ici aussi
 exports.deleteBook = (req, res) => {
     //  Méthode deleteOne pour cibler le avec l'id
     Book.deleteOne({ _id: req.params.id })

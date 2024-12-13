@@ -14,8 +14,9 @@ const bookCtrl = require('../controllers/books.ctrl');
 router.get('/bestrating', auth, bookCtrl.getBestsBook);
 
 // l'utilisation de Multer modifie la requête, il faut donc modifie rle contrôlleur
+
+// ajouter un livre
 router.post('/', auth, multer, bookCtrl.addBook);
-// router.post('/', auth, bookCtrl.addBook);
 
 // modifier un livre
 router.put('/:id', auth, multer, bookCtrl.editBook);
