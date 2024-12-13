@@ -1,10 +1,5 @@
 const { error } = require('console');
 const Book = require('../models/Book');
-const fs = require('fs');
-
-const mongoose = require('mongoose')
-
-
 
 
 exports.addBook = (req, res) => {
@@ -16,8 +11,6 @@ exports.addBook = (req, res) => {
     // protéger l'usurpation de userId -> préférer l'utilisation du user Id présent dans le token jwt
     delete bookObject._userId;
     delete bookObject.averageRating;
-    console.log(bookObject)
-
 
     const book = new Book({
         // extraire l'user id du token avec le middleware auth
@@ -36,8 +29,6 @@ exports.addBook = (req, res) => {
         averageRating: 0
     });
 
-    console.log(book);
-
     // méthode save() pour enregistrer en base de données
     book.save()
         .then(() => res.status(201).json({ message: 'livre enregistré !' }))
@@ -45,18 +36,19 @@ exports.addBook = (req, res) => {
 };
 
 
-
 exports.editBook = (req, res, next) => {
     // S'il y a un file dans le body, parser l'objet 
     const bookObject = req.file ? {
         ...JSON.parse(req.body.book),
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+
         // sinon,         
     } : {
         ...req.body
     };
 
     delete bookObject._userId;
+
     Book.findOne({ _id: req.params.id })
         .then((book) => {
             // Si l'id du token est différent de l'id en base de données, refus
@@ -64,6 +56,13 @@ exports.editBook = (req, res, next) => {
                 res.status(401).json({ message: 'non autorisé, userId mismatch' })
                 // sinon on traite pour mettre à jour l'enregistrement en base
             } else {
+
+
+                // vérifier qu'il y a une image dans la requête et dans le boody déjà existant
+                if (req.file && bookObject.body.imageUrl) {
+                    //! supprimer l'ancienne image ici
+                }
+
                 Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id })
                     .then(() => res.status(201).json({ message: 'modification effectuée' }))
                     .catch((error) => (res.status(400).json({ error })));
@@ -97,11 +96,6 @@ exports.rateBook = (req, res) => {
                 return res.status(404).json({ message: "Livre non trouvé" });
             };
 
-            // Si le livre a déjà été noté par l'utilisateur
-            book.ratings.forEach((book, index) => {
-                console.log(`index : ${index}: ${book.userId}`)
-            });
-
             // ajouter la nouvelle note au tableau ratings
             book.ratings.push(userRating);
 
@@ -130,7 +124,6 @@ exports.rateBook = (req, res) => {
                 ...bookData,
                 // * id: bookData._id.toString(),
             };
-
             res.status(201).json(response);
         })
         .catch((error) =>
@@ -151,6 +144,7 @@ exports.getAllBooks = (req, res) => {
         .catch(error => res.status(400).json({ error }));
 };
 
+
 exports.getOneBook = (req, res) => {
     // Méthode findOne sur la paramètre id de la request 
     Book.findOne({ _id: req.params.id })
@@ -160,6 +154,7 @@ exports.getOneBook = (req, res) => {
         })
         .catch(error => res.status(400).json({ error }));
 };
+
 
 exports.getBestsBook = (req, res) => {
 
@@ -175,10 +170,9 @@ exports.getBestsBook = (req, res) => {
             res.status(200).json(books);
         })
         .catch(error => res.status(400).json({ error }));
-
 };
 
-
+// ! penser à supprimer l'image
 exports.deleteBook = (req, res) => {
     //  Méthode deleteOne pour cibler le avec l'id
     Book.deleteOne({ _id: req.params.id })

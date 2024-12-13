@@ -11,9 +11,6 @@ const multer = require('../middleware/multer-config');
 const bookCtrl = require('../controllers/books.ctrl');
 
 
-// ajouter un livre en bdd
-
-//! livres mieux notés
 router.get('/bestrating', auth, bookCtrl.getBestsBook);
 
 // l'utilisation de Multer modifie la requête, il faut donc modifie rle contrôlleur

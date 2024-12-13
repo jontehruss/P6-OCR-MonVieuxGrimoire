@@ -24,8 +24,6 @@ exports.signUp = (req, res, next) => {
             user.save()
                 .then((newUser) => {
                     res.status(201).json({ message: 'utilisateur  enregistré !' });
-                    // Récupérer l'_id mongo de l'utilisateur
-                    console.log(newUser._id);
                 })
                 .catch(error => res.status(400).json({
                     error: error,
@@ -37,7 +35,6 @@ exports.signUp = (req, res, next) => {
 
 
 exports.logIn = async (req, res) => {
-    console.log('clé token controlleur : ' + process.env.SECRET_KEY)
     // cherche user dans  la base 
     User.findOne({ email: req.body.email })
         .then(user => {
@@ -53,14 +50,14 @@ exports.logIn = async (req, res) => {
                             res.status(401).json({ message: 'identifiant et ou password incorrect(s)' })
                         } else {
                             // envoyer le token encodé dans la réponse
+                            console.warn('Durée token désactivée !!')
                             res.status(200).json({
                                 userId: user._id,
                                 token: jwt.sign(
                                     { userId: user._id },
                                     process.env.SECRET_KEY,
-                                    { expiresIn: '1h' }
+                                    // { expiresIn: '1h' }
                                 )
-                                
                             })
                         };
                     })

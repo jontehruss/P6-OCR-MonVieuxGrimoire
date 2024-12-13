@@ -37,8 +37,8 @@ mongoose.connect(process.env.MONGODB_URI, {
         useUnifiedTopology: true,
         dbName: process.env.DB_NAME,
     })
-    .then(() => console.log('connexion DB ok!'))
-    .catch(err => console.log('connexion failed ! ', err));
+    .then(() => console.log(`Database online :\n${process.env.MONGODB_URI}`))
+    .catch(err => console.log('Database offline, connection failed ! ', err));
 
 // Utiliser le router bookRoutes pour toutes les routes /api/books
 app.use('/api/books', bookRoutes);
