@@ -6,7 +6,8 @@ const MIME_TYPES = {
     'image/jpg': 'jpg',
     'image/jpeg': 'jpg',
     'image/png': 'png',
-    'image/webp': 'webp'
+    'image/webp': 'webp',
+    'image/svg+xml': 'svg'
 };
 
 
@@ -22,18 +23,17 @@ const storage = multer.diskStorage({
 
         // propriété orignal name de file pour récupérer le nom du fichier.
         // méthode replace pour retirer les carractères spéciaux
-
         // console.log(file.originalname)
 
+        let name = file.originalname.split('.'); // isoler l'extension à la fin d'un tableau
 
-        const name = file.originalname.split('.'); // isoler l'extension à la fin d'un tableau
-        name.pop() // supprimer la dernière entrée du tableau
-            .toString() // retransformer en chaine de carractères
-            .replace(/[^\w-]/g, '_') // méthode replace pour retirer les carractères spéciaux
-            .split(' ') // méthode split pour retirer les espaces 
-            .map(name => name.toLocaleLowerCase()) // map pour passer en lowercase
-            .join('_'); // remplacer les espaces par _
-
+        // Supprimer la dernière entrée du tableau et obtenir les éléments restants
+        const nameNoExtension = name.slice(0, -1)
+            .join('.');
+        
+        // Méthode replace pour retirer les caractères spéciaux et espaces
+        const nameClean = nameNoExtension.replace(/[^\w-]/g, '_');
+        
         // avec le mime/type -> création de l'extension
         const extension = MIME_TYPES[file.mimetype];
 
