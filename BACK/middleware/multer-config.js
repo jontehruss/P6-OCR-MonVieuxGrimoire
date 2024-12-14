@@ -42,7 +42,7 @@ const storage = multer.diskStorage({
             return callback(new Error('Mime Type non autorisé'), false);
         };
 
-        const fileName = callback(null, name + Date.now() + '.' + extension);
+        const fileName = callback(null, nameClean + Date.now() + '.' + extension);
 
         return fileName;
 

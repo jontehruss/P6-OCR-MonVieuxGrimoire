@@ -14,27 +14,53 @@ exports.addBook = (req, res) => {
     delete bookObject._userId;
     delete bookObject.averageRating;
 
-    const book = new Book({
-        // extraire l'user id du token avec le middleware auth
-        userId: req.auth.userId,
-        title: bookObject.title,
-        author: bookObject.author,
-        // construire l'url avec la requête, destination et informations récuprées de multer
-        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
-        year: bookObject.year,
-        genre: bookObject.genre,
-        // initialiser le averageRating à 0 et le tableau ratings vide        
-        ratings: [{
-            userId: req.auth.userId,
-            grade: 0
-        }],
-        averageRating: 0
-    });
+    // s'il n'y a pas d'image arrêter le traitement
+    if (!req.file) {
+        // console.log(bookObject)
+        return res.status(400).json({ message: 'Aucun fichier fourni' });
+    }
 
-    // méthode save() pour enregistrer en base de données
-    book.save()
-        .then(() => res.status(201).json({ message: 'livre enregistré !' }))
-        .catch((error) => (res.status(400).json({ error })));
+    try {
+
+        const book = new Book({
+            // extraire l'user id du token avec le middleware auth
+            userId: req.auth.userId,
+            title: bookObject.title,
+            author: bookObject.author,
+            // construire l'url avec la requête, destination et informations récuprées de multer
+            imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+            year: bookObject.year,
+            genre: bookObject.genre,
+            // initialiser le averageRating à 0 et le tableau ratings vide        
+            ratings: [{
+                userId: req.auth.userId,
+                grade: 0
+            }],
+            averageRating: 0
+        });
+
+
+        try {
+            console.log(book.imageUrl)
+            if (typeof book.imageUrl == undefined) {
+                console.log('gérer l\'upload sans image')
+            }
+
+            // méthode save() pour enregistrer en base de données
+            book.save()
+                .then(() => res.status(201).json({ message: 'livre enregistré !' }))
+                .catch((error) => (res.status(400).json({ error })));
+        } catch (err) {
+            console.log(err)
+        };
+
+    } catch (err) {
+        console.log(err)
+    };
+
+
+
+
 };
 
 
@@ -67,7 +93,8 @@ exports.editBook = async (req, res, next) => {
         // Appel de la fonction updateOne() selon les 2 cas
         if (!req.file) {
             // Cas #1 mise à jour d'un champ (texte/nb sans image)
-            // console.log('Cas #1 mise à jour d’un champ (texte/nb sans image)');
+
+            // récupérer la promesse
             updatePromise = Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id });
 
         } else {
@@ -81,20 +108,20 @@ exports.editBook = async (req, res, next) => {
             } catch (err) {
                 console.error('Erreur de suppression du fichier', err);
                 return res.status(500).json({ error: 'Erreur de suppression du fichier' });
-            }
+            };
 
             // récupérer la promesse
             updatePromise = Book.updateOne({ _id: req.params.id }, bookObject);
         };
 
+        // attendre le résultat de la promesse
         await updatePromise;
         res.status(200).json({ message: 'livre modifié' });
-        // console.log('Livre mis à jour');
 
     } catch (error) {
         console.error('Erreur lors de la recherche du livre', error);
         res.status(400).json({ error });
-    }
+    };
 };
 
 
@@ -195,12 +222,59 @@ exports.getBestsBook = (req, res) => {
 };
 
 // ! penser à supprimer l'image ici aussi
-exports.deleteBook = (req, res) => {
-    //  Méthode deleteOne pour cibler le avec l'id
-    Book.deleteOne({ _id: req.params.id })
-        .then(book => res.status(200).json({
-            message: 'livre supprimé !',
-            livre: book
-        }))
-        .catch(error => res.status(400).json({ error }))
+exports.deleteBook = async (req, res) => {
+
+    const userId = req.auth.userId;
+    console.log('userId :', userId);
+
+    const bookId = req.params;
+    console.log(bookId);
+
+    try {
+        // identifier le livre et vérifier l'utilisateur
+        const book = await Book.findOne({ _id: req.params.id });
+
+        if (!book) {
+            return res.status(400).json({ message: 'Livre non trouvé' })
+        };
+
+        if (book.userId != req.auth.userId) {
+            return res.status(401).json({ message: 'non autorisé, user mismatch' })
+        };
+
+
+        try {
+            // supprimer le fichier image
+            const fileName = book.imageUrl.split('/').pop();
+
+            try {
+                await fs.unlink(`./images/${fileName}`);
+
+            } catch (err) {
+                return res.status(500).json({ error: 'Erreur de suppression du fichier' })
+            };
+
+            // initialiser une variable pour la promesse
+            let updatePromise;
+
+            // demander la supression mongodb
+            updatePromise = Book.deleteOne({ _id: req.params.id });
+
+            // résoudre la promesse
+            await updatePromise;
+            res.status(200).json({ message: 'livre supprimé' });
+
+        } catch (err) {
+            console.error('Erreur lors de la suppression du livre', error);
+            res.status(400).json({ error });
+        };
+
+
+
+    } catch (err) {
+        console.error('Erreur lors de la recherche du livre', error);
+        res.status(400).json({ error });
+    };
+
+
 };
