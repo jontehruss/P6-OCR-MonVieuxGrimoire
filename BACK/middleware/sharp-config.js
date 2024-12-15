@@ -1,4 +1,5 @@
 const sharp = require('sharp');
+const fs = require('fs');
 
 module.exports = (req, res, next) => {
 
@@ -7,24 +8,35 @@ module.exports = (req, res, next) => {
     convertToWebp(req.file.path);
 
     // Fonction pour convertir un fichier image en WebP
-    function convertToWebp(filePath) {
+    async function convertToWebp(filePath) {
         const outputFilePath = filePath.replace(/\.(png|jpg|jpeg|gif)$/, '.webp');
 
         try {
-            sharp(filePath)
+            await sharp(filePath)
                 .toFormat('webp')
                 .toFile(outputFilePath);
             console.log(`Image convertie avec succès: ${outputFilePath}`);
 
-            // ! remplacer le nom du fichier pour l'enregistrement en bdd
-            req.file.path = outputFilePath;
+            // remplacer le nom du fichier pour l'enregistrement en bdd
+            console.log('req.file.path',req.file.path)
+            
+            req.file.pathWebp = outputFilePath;
 
+            console.log('req.file.pathWebp', req.file.pathWebp)
 
             // ! supprimer le fichier original avec fs.unlink
             try {
+                // console.log(filePath)
+
+                await fs.unlink(filePath, (err) => {
+                    if (err) throw err;
+                    console.log(filePath, ' a été supprimé !');
+                    
+                  });
 
             } catch (err) {
-
+                console.error('Erreur de suppression du fichier', err);
+                return res.status(500).json({ error: 'Erreur de suppression du fichier' });
             }
 
 

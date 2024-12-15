@@ -23,8 +23,13 @@ exports.addBook = (req, res) => {
         return res.status(400).json({ message: 'Aucun fichier fourni' });
     }
 
+    // corriger le \ du filepath pour compatibilité URL
+    let imageUrl = req.file.pathWebp;
+    let fixImageUrl = imageUrl.split('\\').join('/');
+
     // Récupérer l'adress du bon fichier(compressé avec Sharp)
-    let imageUrl = `${req.protocol}://${req.get('host')}/${req.file.path}`;
+    imageUrl = `${req.protocol}://${req.get('host')}/${fixImageUrl}`;
+    console.log(imageUrl)
 
     try {
 
@@ -35,7 +40,6 @@ exports.addBook = (req, res) => {
             author: bookObject.author,
             // construire l'url avec la requête, destination et informations récuprées de multer
             imageUrl: imageUrl,
-            // imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
             year: bookObject.year,
             genre: bookObject.genre,
             // initialiser le averageRating à 0 et le tableau ratings vide        
@@ -45,9 +49,9 @@ exports.addBook = (req, res) => {
             }],
             averageRating: 0
         });
-
+        console.log(book)
         try {
-            console.log(book.imageUrl)
+            // console.log(book.imageUrl)
             if (typeof book.imageUrl == undefined) {
                 console.log('gérer l\'upload sans image')
             }
