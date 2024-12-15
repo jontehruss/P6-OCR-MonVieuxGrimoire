@@ -22,7 +22,7 @@ router.get('/bestrating', auth, bookCtrl.getBestsBook);
 router.post('/', auth, multer, sharp, bookCtrl.addBook);
 
 // modifier un livre
-router.put('/:id', auth, multer, bookCtrl.editBook);
+router.put('/:id', auth, multer, sharp, bookCtrl.editBook);
 
 // lister tous les livre
 router.get('/', auth, bookCtrl.getAllBooks);

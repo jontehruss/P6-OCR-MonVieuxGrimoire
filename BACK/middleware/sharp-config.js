@@ -15,14 +15,14 @@ module.exports = (req, res, next) => {
             await sharp(filePath)
                 .toFormat('webp')
                 .toFile(outputFilePath);
-            console.log(`Image convertie avec succès: ${outputFilePath}`);
+            // console.log(`Image convertie avec succès: ${outputFilePath}`);
 
             // remplacer le nom du fichier pour l'enregistrement en bdd
-            console.log('req.file.path',req.file.path)
+            // console.log('req.file.path',req.file.path)
             
             req.file.pathWebp = outputFilePath;
 
-            console.log('req.file.pathWebp', req.file.pathWebp)
+            // console.log('req.file.pathWebp', req.file.pathWebp)
 
             // ! supprimer le fichier original avec fs.unlink
             try {
@@ -30,7 +30,7 @@ module.exports = (req, res, next) => {
 
                 await fs.unlink(filePath, (err) => {
                     if (err) throw err;
-                    console.log(filePath, ' a été supprimé !');
+                    // console.log(filePath, ' a été supprimé !');
                     
                   });
 
@@ -46,7 +46,7 @@ module.exports = (req, res, next) => {
             return next(err);
         }
 
-        console.log('ici')
+        // console.log('ici')
         next();
 
     }

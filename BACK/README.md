@@ -29,3 +29,5 @@ npm iunstall --save jsonwebtoken
 
 # gérer les fichiers (upload/download)
 npm instal -- save multer
+
+npm install sharp

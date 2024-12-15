@@ -29,7 +29,7 @@ exports.addBook = (req, res) => {
 
     // Récupérer l'adress du bon fichier(compressé avec Sharp)
     imageUrl = `${req.protocol}://${req.get('host')}/${fixImageUrl}`;
-    console.log(imageUrl)
+    // console.log(imageUrl)
 
     try {
 
@@ -49,7 +49,7 @@ exports.addBook = (req, res) => {
             }],
             averageRating: 0
         });
-        console.log(book)
+
         try {
             // console.log(book.imageUrl)
             if (typeof book.imageUrl == undefined) {
@@ -107,16 +107,32 @@ exports.editBook = async (req, res, next) => {
 
         } else {
             // Cas #2 mise à jour de l'image
+
+            // ! gérer le nommage avec sharp
             const fileName = book.imageUrl.split('/').pop();
+            console.log('fileName : ', fileName)
+
             try {
                 // supprimer le fichier avec fs.unlink
                 await fs.unlink(`./images/${fileName}`);
-                // console.log('Fichier supprimé');
+                console.log('Fichier supprimé');
 
             } catch (err) {
                 console.error('Erreur de suppression du fichier', err);
                 return res.status(500).json({ error: 'Erreur de suppression du fichier' });
             };
+
+            // ! gérer ici le renommage pour récupérer le fichier webp compressé par sharp
+            // corriger le \ du filepath pour compatibilité URL
+            let imageUrl = req.file.pathWebp;
+            let fixImageUrl = imageUrl.split('\\').join('/');
+
+            // Récupérer l'adress du bon fichier(compressé avec Sharp)
+            imageUrl = `${req.protocol}://${req.get('host')}/${fixImageUrl}`;
+
+            bookObject.imageUrl = imageUrl;
+
+            console.log('bookObject.imageUrl : ', bookObject.imageUrl)
 
             // récupérer la promesse
             updatePromise = Book.updateOne({ _id: req.params.id }, bookObject);
