@@ -3,6 +3,9 @@ const fs = require('fs-extra');
 // const fsXtra = require ('fs-extra');
 const Book = require('../models/Book');
 
+// // ! importer le middleware Multer pour la gestion des fichiers 
+// const multer = require('../middleware/multer-config');
+
 
 exports.addBook = (req, res) => {
     // parser l'objet du body request Book
@@ -20,6 +23,9 @@ exports.addBook = (req, res) => {
         return res.status(400).json({ message: 'Aucun fichier fourni' });
     }
 
+    // Récupérer l'adress du bon fichier(compressé avec Sharp)
+    let imageUrl = `${req.protocol}://${req.get('host')}/${req.file.path}`;
+
     try {
 
         const book = new Book({
@@ -28,7 +34,8 @@ exports.addBook = (req, res) => {
             title: bookObject.title,
             author: bookObject.author,
             // construire l'url avec la requête, destination et informations récuprées de multer
-            imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+            imageUrl: imageUrl,
+            // imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
             year: bookObject.year,
             genre: bookObject.genre,
             // initialiser le averageRating à 0 et le tableau ratings vide        
@@ -39,27 +46,24 @@ exports.addBook = (req, res) => {
             averageRating: 0
         });
 
-
         try {
             console.log(book.imageUrl)
             if (typeof book.imageUrl == undefined) {
                 console.log('gérer l\'upload sans image')
             }
 
+
             // méthode save() pour enregistrer en base de données
             book.save()
                 .then(() => res.status(201).json({ message: 'livre enregistré !' }))
                 .catch((error) => (res.status(400).json({ error })));
         } catch (err) {
-            console.log(err)
+            console.log('erreur d\'enregistrement du livre', err)
         };
 
     } catch (err) {
-        console.log(err)
+        console.log('erreur dans l\'ajout du livre : ', err)
     };
-
-
-
 
 };
 

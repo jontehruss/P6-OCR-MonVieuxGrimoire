@@ -15,9 +15,6 @@ const app = express();
 const bookRoutes = require('./routes/books.routes');
 const userRoutes = require('./routes/user.routes');
 
-
-
-
 // ajouter les Origin, Headers et Méthodes autorisées pour CORS
 // 1er middleware -> Appliqué sur toutes les routes
 app.use((req, res, next) => {
