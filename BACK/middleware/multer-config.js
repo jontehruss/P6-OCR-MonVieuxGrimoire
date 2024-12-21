@@ -31,6 +31,15 @@ const storage = multer.diskStorage({
         // avec le mime/type -> création de l'extension
         const extension = MIME_TYPES[file.mimetype];
 
+        if (extension === 'webp') {
+            console.log('--> MULTER - WEBP DETECTED !');
+
+        //     let end = callback(null, nameClean + Date.now() + '.img' ,);
+        //     return end;
+        } else {
+            console.log('--> MULTER - TYPE IMAGE NORMAL')
+        }
+
         // contrôler le mime type
         if (!extension) {
             return callback(new Error('Mime Type non autorisé'), false);

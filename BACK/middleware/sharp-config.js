@@ -10,13 +10,35 @@ module.exports = (req, res, next) => {
 
         const fileExtension = filePath.split('.').pop().toLowerCase();
 
-        const outputFilePath = filePath.replace(/\.(png|jpg|jpeg|gif|svg)$/, '.webp');
+        const outputFilePath = filePath.replace(/\.(png|jpg|jpeg|gif|svg|img)$/, '.webp');
 
-        // passer le chemin du file en paramètre            
-        convertToWebp(filePath, outputFilePath);
+
+        console.log('--> SHARP - #################☺')
+        console.log('--> SHARP - filePath : ', filePath)
+        console.log('--> SHARP - outputFilePath : ', outputFilePath)
+        console.log('--> SHARP - fileExtension : ', fileExtension)
+
+
+        if (fileExtension !== 'webp') {
+            console.log('--> SHARP - IMAGE NORMALE !')
+            // passer le chemin du file en paramètre            
+            convertToWebp(filePath, outputFilePath);
+
+        } else {
+            console.log('--> SHARP - WEBP DETECTED !');
+            // remplacer le nom du fichier pour l'enregistrement en bdd
+            req.file.pathWebp = outputFilePath;
+            console.log('--> SHARP - outputFilePath : ', outputFilePath)
+            next();
+        }
+
 
         // Fonction pour convertir un fichier image en WebP
         async function convertToWebp(filePath, outputFilePath) {
+
+            // if (fileExtension !== 'webp') {
+            //     console.log('--> SHARP - Image normale !! ')
+
 
             try {
                 await sharp(filePath)
@@ -46,6 +68,7 @@ module.exports = (req, res, next) => {
                 res.status(500).json({ message: 'erreur de conversion' })
                 return next(err);
             };
+            // };
 
             next();
 

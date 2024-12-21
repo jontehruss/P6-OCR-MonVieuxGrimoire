@@ -108,8 +108,10 @@ exports.editBook = async (req, res, next) => {
             };
 
             // gérer ici le renommage pour récupérer le fichier webp compressé par sharp
-            // corriger le \ du filepath pour compatibilité URL
+            // ! corriger le \ du filepath pour compatibilité URL
             let imageUrl = req.file.pathWebp;
+            console.log('---> CONTROLEUR : imageUrl :', imageUrl)
+            
             let fixImageUrl = imageUrl.split('\\').join('/');
 
             // Récupérer l'adress du bon fichier(compressé avec Sharp)
