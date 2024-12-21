@@ -3,54 +3,55 @@ const fs = require('fs');
 
 module.exports = (req, res, next) => {
 
+    // condition pour vérifier s'il y a une image dans la requête
+    if ('file' in req) {
 
-    // passer le chemin du file en paramètre
-    convertToWebp(req.file.path);
+        const filePath = req.file.path;
 
-    // Fonction pour convertir un fichier image en WebP
-    async function convertToWebp(filePath) {
-        const outputFilePath = filePath.replace(/\.(png|jpg|jpeg|gif)$/, '.webp');
+        const fileExtension = filePath.split('.').pop().toLowerCase();
 
-        try {
-            await sharp(filePath)
-                .toFormat('webp')
-                .toFile(outputFilePath);
-            // console.log(`Image convertie avec succès: ${outputFilePath}`);
+        const outputFilePath = filePath.replace(/\.(png|jpg|jpeg|gif|svg)$/, '.webp');
 
-            // remplacer le nom du fichier pour l'enregistrement en bdd
-            // console.log('req.file.path',req.file.path)
-            
-            req.file.pathWebp = outputFilePath;
+        // passer le chemin du file en paramètre            
+        convertToWebp(filePath, outputFilePath);
 
-            // console.log('req.file.pathWebp', req.file.pathWebp)
+        // Fonction pour convertir un fichier image en WebP
+        async function convertToWebp(filePath, outputFilePath) {
 
-            // ! supprimer le fichier original avec fs.unlink
             try {
-                // console.log(filePath)
+                await sharp(filePath)
+                    .resize({ height: 650 })
+                    .toFormat('webp')
+                    .webp({ quality: 80 })
+                    .toFile(outputFilePath);
 
-                await fs.unlink(filePath, (err) => {
-                    if (err) throw err;
-                    // console.log(filePath, ' a été supprimé !');
-                    
-                  });
+                // remplacer le nom du fichier pour l'enregistrement en bdd
+                req.file.pathWebp = outputFilePath;
+
+                // supprimer le fichier original avec fs.unlink
+                try {
+
+                    await fs.unlink(filePath, (err) => {
+                        if (err) throw err;
+                    });
+
+                } catch (err) {
+                    console.error('Erreur de suppression du fichier', err);
+                    return res.status(500).json({ error: 'Erreur de suppression du fichier' });
+                };
+
 
             } catch (err) {
-                console.error('Erreur de suppression du fichier', err);
-                return res.status(500).json({ error: 'Erreur de suppression du fichier' });
-            }
+                console.error(`Erreur lors de la conversion de ${filePath}:`, err);
+                res.status(500).json({ message: 'erreur de conversion' })
+                return next(err);
+            };
 
+            next();
 
-        } catch (err) {
-            console.error(`Erreur lors de la conversion de ${filePath}:`, err);
-            // res.status(500).json({ message : 'erreur de conversion'})
-            return next(err);
         }
-
-        // console.log('ici')
+    } else {
+        // passer à l'étape suivante directement si pas d'image
         next();
-
-    }
-
-}
-
-
+    };
+};

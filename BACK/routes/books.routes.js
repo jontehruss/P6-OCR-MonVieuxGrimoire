@@ -1,22 +1,22 @@
 const express = require('express');
+
+// importer router 
 const router = express.Router();
 
-//  importer middleware de vérification authentification
+// importer middleware de vérification authentification
 const auth = require('../middleware/auth');
 
-// importer le middleware Multer pour la gestion des fichiers 
+//importer Multer pour la gestion des fichiers 
 const multer = require('../middleware/multer-config');
 
-//  importer le compresseur d'image
+// importer le compresseur d'image
 const sharp = require('../middleware/sharp-config');
 
-//  importer le controlleur
+// importer le controlleur
 const bookCtrl = require('../controllers/books.ctrl');
 
-
-router.get('/bestrating', auth, bookCtrl.getBestsBook);
-
-// l'utilisation de Multer modifie la requête, il faut donc modifie rle contrôlleur
+// livre les mieux notés
+router.get('/bestrating', bookCtrl.getBestsBook);
 
 // ajouter un livre
 router.post('/', auth, multer, sharp, bookCtrl.addBook);
@@ -25,10 +25,10 @@ router.post('/', auth, multer, sharp, bookCtrl.addBook);
 router.put('/:id', auth, multer, sharp, bookCtrl.editBook);
 
 // lister tous les livre
-router.get('/', auth, bookCtrl.getAllBooks);
+router.get('/', bookCtrl.getAllBooks);
 
-// détails d'un livre
-router.get('/:id', auth, bookCtrl.getOneBook);
+// détails d'un livre (auth?)
+router.get('/:id', bookCtrl.getOneBook);
 
 // Noter un livre
 router.post('/:id/rating', auth, bookCtrl.rateBook);
@@ -36,5 +36,5 @@ router.post('/:id/rating', auth, bookCtrl.rateBook);
 // supprimer un livre
 router.delete('/:id', auth, bookCtrl.deleteBook);
 
-
+// exposer le routeur 
 module.exports = router;

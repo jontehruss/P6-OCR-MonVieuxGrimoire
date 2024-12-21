@@ -1,11 +1,10 @@
+//  importer json web token
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-// ! middleware pour vérifier la présence et conformité du token dans le header des requêtes
+// middleware pour vérifier la présence et conformité du token dans le header des requêtes
 module.exports = (req, res, next) => {
     try {
-        // console.log('Clé secrète dans le middleware :', process.env.SECRET_KEY);
-
         const authHeader = req.headers.authorization;
 
         // vérifier si le header Authorization est présent
@@ -18,16 +17,16 @@ module.exports = (req, res, next) => {
 
         //  erreur si le token est absent
         if (!token) {
-            throw new Error('Token manquant');
+            throw new Error('Token JWT absent');
         }
 
         // checker la conformité du token avec la clé secrète
         // La méthode verify() du package jsonwebtoken permet de vérifier la validité d'un token
         const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
 
-        // ajouter "userId" à req.auth pour autoriser uniquement l'utilisateur connecté à accéder/modifier les ressources
-        req.auth = { userId: decodedToken.userId }; 
-        // console.log('Utilisateur authentifié :', req.auth);
+        // ajouter "userId" issus du token à req.auth pour autoriser uniquement l'utilisateur connecté à accéder/modifier les ressources
+        // req.auth set comparé plus loin dans les traitements avec le userId des body.req
+        req.auth = { userId: decodedToken.userId };
 
         // passer au middleware suivant
         next();

@@ -1,10 +1,6 @@
 const { error } = require('console');
 const fs = require('fs-extra');
-// const fsXtra = require ('fs-extra');
 const Book = require('../models/Book');
-
-// // ! importer le middleware Multer pour la gestion des fichiers 
-// const multer = require('../middleware/multer-config');
 
 
 exports.addBook = (req, res) => {
@@ -19,7 +15,6 @@ exports.addBook = (req, res) => {
 
     // s'il n'y a pas d'image arrêter le traitement
     if (!req.file) {
-        // console.log(bookObject)
         return res.status(400).json({ message: 'Aucun fichier fourni' });
     }
 
@@ -29,7 +24,6 @@ exports.addBook = (req, res) => {
 
     // Récupérer l'adress du bon fichier(compressé avec Sharp)
     imageUrl = `${req.protocol}://${req.get('host')}/${fixImageUrl}`;
-    // console.log(imageUrl)
 
     try {
 
@@ -51,16 +45,11 @@ exports.addBook = (req, res) => {
         });
 
         try {
-            // console.log(book.imageUrl)
-            if (typeof book.imageUrl == undefined) {
-                console.log('gérer l\'upload sans image')
-            }
-
-
             // méthode save() pour enregistrer en base de données
             book.save()
                 .then(() => res.status(201).json({ message: 'livre enregistré !' }))
                 .catch((error) => (res.status(400).json({ error })));
+
         } catch (err) {
             console.log('erreur d\'enregistrement du livre', err)
         };
@@ -101,28 +90,24 @@ exports.editBook = async (req, res, next) => {
         // Appel de la fonction updateOne() selon les 2 cas
         if (!req.file) {
             // Cas #1 mise à jour d'un champ (texte/nb sans image)
-
             // récupérer la promesse
             updatePromise = Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id });
 
         } else {
             // Cas #2 mise à jour de l'image
-
-            // ! gérer le nommage avec sharp
+            // gérer le nommage avec sharp
             const fileName = book.imageUrl.split('/').pop();
-            console.log('fileName : ', fileName)
 
             try {
                 // supprimer le fichier avec fs.unlink
                 await fs.unlink(`./images/${fileName}`);
-                console.log('Fichier supprimé');
 
             } catch (err) {
                 console.error('Erreur de suppression du fichier', err);
                 return res.status(500).json({ error: 'Erreur de suppression du fichier' });
             };
 
-            // ! gérer ici le renommage pour récupérer le fichier webp compressé par sharp
+            // gérer ici le renommage pour récupérer le fichier webp compressé par sharp
             // corriger le \ du filepath pour compatibilité URL
             let imageUrl = req.file.pathWebp;
             let fixImageUrl = imageUrl.split('\\').join('/');
@@ -131,8 +116,6 @@ exports.editBook = async (req, res, next) => {
             imageUrl = `${req.protocol}://${req.get('host')}/${fixImageUrl}`;
 
             bookObject.imageUrl = imageUrl;
-
-            console.log('bookObject.imageUrl : ', bookObject.imageUrl)
 
             // récupérer la promesse
             updatePromise = Book.updateOne({ _id: req.params.id }, bookObject);
@@ -177,8 +160,8 @@ exports.rateBook = (req, res) => {
                 return sum + rating.grade;
             }, 0);
 
-            // calculer le nombre de grades
-            const numberOfGrades = book.ratings.length;
+            // calculer le nombre de grades (retirer 1 pour le calcul avec la note 0)
+            const numberOfGrades = book.ratings.length -1 ;
 
             // calculer la moyenne du livre
             const averageGrade = numberOfGrades > 0 ? Math.round(totalGrade / numberOfGrades) : 0;
@@ -192,10 +175,8 @@ exports.rateBook = (req, res) => {
             // Convertir l'objet en JSON ordinaire
             const bookData = updatedBook.toObject();
 
-            // ! Voir si la réponse est ok ?
             const response = {
                 ...bookData,
-                // * id: bookData._id.toString(),
             };
             res.status(201).json(response);
         })
@@ -222,7 +203,6 @@ exports.getOneBook = (req, res) => {
     // Méthode findOne sur la paramètre id de la request 
     Book.findOne({ _id: req.params.id })
         .then((book) => {
-            // console.log(req.params.id);
             (res.status(200).json(book));
         })
         .catch(error => res.status(400).json({ error }));
@@ -230,7 +210,6 @@ exports.getOneBook = (req, res) => {
 
 
 exports.getBestsBook = (req, res) => {
-
     // Méthode find pour récupérer les livres
     Book.find()
         // renvoyer que 3 éléments
@@ -245,14 +224,8 @@ exports.getBestsBook = (req, res) => {
         .catch(error => res.status(400).json({ error }));
 };
 
-// ! penser à supprimer l'image ici aussi
+
 exports.deleteBook = async (req, res) => {
-
-    const userId = req.auth.userId;
-    console.log('userId :', userId);
-
-    const bookId = req.params;
-    console.log(bookId);
 
     try {
         // identifier le livre et vérifier l'utilisateur
@@ -294,11 +267,9 @@ exports.deleteBook = async (req, res) => {
         };
 
 
-
     } catch (err) {
         console.error('Erreur lors de la recherche du livre', error);
         res.status(400).json({ error });
     };
-
 
 };

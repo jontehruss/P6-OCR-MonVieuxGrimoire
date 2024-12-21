@@ -15,7 +15,6 @@ const MIME_TYPES = {
 const storage = multer.diskStorage({
     destination: (req, file, callback) => {
         callback(null, 'images')
-        // console.log(req)
     },
     filename: (req, file, callback) => {
 
@@ -24,8 +23,7 @@ const storage = multer.diskStorage({
         let name = file.originalname.split('.'); // isoler l'extension à la fin d'un tableau
 
         // Supprimer la dernière entrée du tableau et obtenir les éléments restants
-        const nameNoExtension = name.slice(0, -1)
-            .join('.');
+        const nameNoExtension = name.slice(0, -1).join('.');
 
         // Méthode replace pour retirer les caractères spéciaux et espaces
         const nameClean = nameNoExtension.replace(/[^\w-]/g, '_');
@@ -38,17 +36,11 @@ const storage = multer.diskStorage({
             return callback(new Error('Mime Type non autorisé'), false);
         };
 
-        // const fileName = callback(null, nameClean + Date.now() + '.' + extension,
-        // callback(storage._handleFile)
-
+        // appel de la fonction de retour avec les paramètres définis pour enregistrer le fichier
         callback(null, nameClean + Date.now() + '.' + extension,
         );
-
-        // return fileName;
-
     }
 });
-
 
 
 // export de la conf avec la méthode multer en passant le paramètre storage qui contient la config

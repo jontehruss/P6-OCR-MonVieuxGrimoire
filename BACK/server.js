@@ -1,32 +1,31 @@
 // Node utilise le système de module CommonJS -> require plutôt que import
+
+// module http pour agir en tant que serveur http
 const http = require('http');
+
+// importer l'app express qui gère les requêtes avec les clients
 const app = require('./app');
 
-
-const normamlizePort = val => {
-    const port = parseInt(val, 10);
-
-    if (isNaN(port)) {
-        return val;
-    }
-    if (port >= 10) {
-        return port;
-    }
-    return false;
-};
-
-// renvoie un port valide, qu'il soit fourni sous la forme d'un numéro ou d'une chaîne
-const port = normamlizePort(process.env.PORT || 4000);
-
+// définir le port d'écoute
+const port = process.env.PORT;
 app.set('port', port);
+
 
 //  fonction pour rechercher et gèrer les différentes erreurs
 const errorHandler = error => {
+    //  si l'erreur n'est pas sur le listner, envoie de l'erreur
     if (error.syscall !== 'listner') {
         throw error;
-    }
+    };
+
+    // récupérer les informations à propos de la connexion au serveur
     const address = server.address();
+
+    // si address est de type string ->renvoie 'pipe ' + address
+    // sinon -> renvoie 'port: ' + port
     const bind = typeof address === 'string' ? 'pipe ' + address : 'port: ' + port;
+
+    // cas d'erreurs courrants
     switch (error.code) {
         case 'EACCES':
             console.error(bind + 'nécéssite des privilèges élevés !');
@@ -38,20 +37,22 @@ const errorHandler = error => {
             break;
         default:
             throw error;
-    }
+    };
 
 };
 
-
+// initialisation du serveur http
 const server = http.createServer(app);
-//  méthode pour démarrer le serveur avec la gestion d'erreurs
+
+// méthode pour démarrer le serveur avec la gestion d'erreurs
 server.on('error', errorHandler);
-//  méthode pour démarer le serveur selon les paramètres définis
+
+// méthode pour démarer le serveur selon les paramètres définis
 server.on('listening', () => {
     const address = server.address();
     const bind = typeof address === 'string' ? 'pipe ' + address : 'port ' + port;
-    console.log('listening on ' + bind);
+    console.log('Express server online, listening on : ' + bind);
 });
 
-//  méthode pour mettre le serveur en écoute
+// méthode pour mettre le serveur en écoute sur le port défini
 server.listen(port);
